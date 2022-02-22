@@ -25,6 +25,9 @@ namespace NerdStore.Catalogo.Domain
             Valor = valor;
             DataCadastro = dataCadastro;
             Imagem = imagem;
+
+            // Can't allow an instance of a invalid "Produto" object
+            Validar();
         }
 
         #region AdHoc setters
@@ -68,21 +71,10 @@ namespace NerdStore.Catalogo.Domain
 
         public void Validar()
         {
-            // Validate it's own state to guarantee the integrity of the class
-            // Like checking if the class has a StockAmount minor than zero, etc.
-        }
-    }
+            // Validate it's own state to guarantee the integrity of the class, like checking if the class has a StockAmount minor than zero, etc.
+            // Best practice is to have the validations on a AssertionConcern class that will throw an exception
 
-
-    public class Categoria : Entity
-    {
-        public string Nome { get; set; }
-        public int Codigo { get; set; }
-
-        public Categoria(string nome, int codigo)
-        {
-            Nome = nome;
-            Codigo = codigo;
+            // AssertionConcern.ValidateIfEmpty(Nome, "Nome não pode ser vazio.");
         }
     }
 }
