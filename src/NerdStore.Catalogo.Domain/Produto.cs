@@ -67,6 +67,11 @@ namespace NerdStore.Catalogo.Domain
         {
             QuantidadeEstoque += quantidade;
         }
+
+        public bool PossuiEstoque(int quantidade)
+        {
+            return QuantidadeEstoque >= quantidade;
+        }
         #endregion
 
         public void Validar()
