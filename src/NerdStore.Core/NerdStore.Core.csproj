@@ -5,8 +5,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Messages\CommonMessages\DomainEvents\Notifications\**" />
+    <EmbeddedResource Remove="Messages\CommonMessages\DomainEvents\Notifications\**" />
+    <None Remove="Messages\CommonMessages\DomainEvents\Notifications\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FluentValidation" Version="8.4.0" />
     <PackageReference Include="MediatR" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Messages\CommonMessages\IntegrationEvents\" />
   </ItemGroup>
 
 </Project>
