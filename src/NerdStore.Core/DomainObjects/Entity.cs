@@ -1,16 +1,37 @@
 ﻿using System;
+using System.Collections.Generic;
+using NerdStore.Core.Messages;
 
 namespace NerdStore.Core.DomainObjects
 {
     // Entity SuperClass
     public abstract class Entity
     {
+        private List<Event> _events;
+        public IReadOnlyCollection<Event> Eventos => _events?.AsReadOnly();
+
         // Best practice to work with Guid as identification
         public Guid Id { get; private set; }
 
         protected Entity()
         {
             Id = Guid.NewGuid(); // Generate own Guid
+        }
+
+        public void AdicionarEvento(Event evento)
+        {
+            _events = _events ?? new List<Event>();
+            _events.Add(evento);
+        }
+
+        public void RemoverEvento(Event eventItem)
+        {
+            _events?.Remove(eventItem);
+        }
+
+        public void LimparEventos()
+        {
+            _events?.Clear();
         }
 
         // Comparison criteria is the IDENTIFICATION of both Entities
