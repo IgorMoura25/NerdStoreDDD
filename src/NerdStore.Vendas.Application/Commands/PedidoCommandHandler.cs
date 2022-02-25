@@ -1,9 +1,13 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using NerdStore.Core.Communication.Mediator;
+using NerdStore.Core.DTO;
+using NerdStore.Core.Extensions;
 using NerdStore.Core.Messages;
+using NerdStore.Core.Messages.CommonMessages.IntegrationEvents;
 using NerdStore.Core.Messages.CommonMessages.Notifications;
 using NerdStore.Vendas.Application.Events;
 using NerdStore.Vendas.Domain;
@@ -11,12 +15,15 @@ using NerdStore.Vendas.Domain;
 namespace NerdStore.Vendas.Application.Commands
 {
     // CQRS: The command handler for Pedido
-    public class PedidoCommandHandler : IRequestHandler<AdicionarItemPedidoCommand, bool>
+    public class PedidoCommandHandler : 
+        IRequestHandler<AdicionarItemPedidoCommand, bool>,
+        IRequestHandler<IniciarPedidoCommand, bool>
     {
         private readonly IPedidoRepository _pedidoRepository;
         private readonly IMediatorHandler _mediatorHandler;
 
-        public PedidoCommandHandler(IPedidoRepository pedidoRepository, IMediatorHandler mediatorHandler)
+        public PedidoCommandHandler(IPedidoRepository pedidoRepository,
+                                    IMediatorHandler mediatorHandler)
         {
             _pedidoRepository = pedidoRepository;
             _mediatorHandler = mediatorHandler;
@@ -61,6 +68,21 @@ namespace NerdStore.Vendas.Application.Commands
             // Publish the events ONLY if everything went right (including persistance, etc.)
             await _mediatorHandler.PublicarEventos(pedido);
 
+            return true;
+        }
+
+        public async Task<bool> Handle(IniciarPedidoCommand message, CancellationToken cancellationToken)
+        {
+            var pedido = await _pedidoRepository.ObterPedidoRascunhoPorClienteId(message.ClienteId);
+            pedido.IniciarPedido();
+
+            var itensList = new List<Item>();
+            pedido.PedidoItems.ForEach(i => itensList.Add(new Item { Id = i.ProdutoId, Quantidade = i.Quantidade }));
+            var listaProdutosPedido = new ListaProdutosPedido { PedidoId = pedido.Id, Itens = itensList };
+
+            pedido.AdicionarEvento(new PedidoIniciadoEvent(pedido.Id, pedido.ClienteId, listaProdutosPedido, pedido.ValorTotal, message.NomeCartao, message.NumeroCartao, message.ExpiracaoCartao, message.CvvCartao));
+
+            _pedidoRepository.Atualizar(pedido);
             return true;
         }
 
